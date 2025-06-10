@@ -1,0 +1,366 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>AKMC - Zjarret</title>
+
+    <!-- Core & Plugin CSS from your new map -->
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.css"
+    />
+    <link
+      rel="stylesheet"
+      href="https://maxcdn.bootstrapcdn.com/bootstrap/3.4.1/css/bootstrap.min.css"
+    />
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css"
+    />
+    <!-- Using a more recent FontAwesome -->
+    <link
+      rel="stylesheet"
+      href="https://ppete2.github.io/Leaflet.PolylineMeasure/Leaflet.PolylineMeasure.css"
+    />
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/Leaflet.awesome-markers/2.0.2/leaflet.awesome-markers.css"
+    />
+    <link rel="stylesheet" href="source/jquery-ui.min.css" />
+    <link rel="stylesheet" href="styles.css" />
+    <link rel="stylesheet" href="source/iconLayers.css" />
+    <link rel="stylesheet" href="source/L.Control.Sidebar.css" />
+    <link rel="stylesheet" href="source/easy-button.css" />
+    <link rel="stylesheet" href="source/L.Control.MousePosition.css" />
+    <link rel="stylesheet" href="source/leaflet-geoman.css" />
+    <link rel="stylesheet" href="source/L.Draw.OrthoPolygon.css" />
+    <link rel="stylesheet" href="source/L.Control.CoordProjection.css" />
+
+    <!-- ADDED: MarkerCluster CSS for Wildfire data -->
+    <link
+      rel="stylesheet"
+      href="https://unpkg.com/leaflet.markercluster@1.4.1/dist/MarkerCluster.css"
+    />
+    <link
+      rel="stylesheet"
+      href="https://unpkg.com/leaflet.markercluster@1.4.1/dist/MarkerCluster.Default.css"
+    />
+
+    <style>
+      /* ADDED: Popup Styling for Wildfire data */
+      .leaflet-popup-content-wrapper {
+        background-color: #2c3e50;
+        color: #ecf0f1;
+        border-radius: 6px;
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.4);
+      }
+      .leaflet-popup-content {
+        font-size: 14px;
+        line-height: 1.6;
+        margin: 12px 18px !important;
+      }
+      .leaflet-popup-tip {
+        background: #2c3e50;
+      }
+      .popup-title {
+        font-size: 16px;
+        font-weight: bold;
+        color: #3498db;
+        margin-bottom: 8px;
+        border-bottom: 1px solid #34495e;
+        padding-bottom: 5px;
+      }
+      .popup-row {
+        margin-bottom: 4px;
+      }
+      .popup-key {
+        font-weight: 600;
+        color: #95a5a6;
+        margin-right: 5px;
+      }
+      .popup-row a {
+        color: #3498db;
+        text-decoration: none;
+        font-weight: bold;
+      }
+      .popup-row a:hover {
+        text-decoration: underline;
+      }
+    </style>
+  </head>
+  <body>
+    <!-- Main redesigned sidebar (from your new code) -->
+    <div id="sidebar"></div>
+    <div id="map" class="col-md-12"></div>
+
+    <!-- Core & Plugin JS from your new map -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.7.1/jquery.js"></script>
+    <script src="source/jquery-ui.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/proj4js/2.11.0/proj4.js"></script>
+    <script src="https://unpkg.com/proj4leaflet@1.0.2/src/proj4leaflet.js"></script>
+    <script src="source/iconLayers.js"></script>
+    <script src="source/L.Control.Sidebar.js"></script>
+    <script src="source/easy-button.js"></script>
+    <script src="https://ppete2.github.io/Leaflet.PolylineMeasure/Leaflet.PolylineMeasure.js"></script>
+    <script src="source/L.Control.MousePosition.js"></script>
+    <script src="source/leaflet-geoman.js"></script>
+    <script src="source/L.Draw.OrthoPolygon.js"></script>
+    <script src="source/L.Control.CoordProjection.js"></script>
+    <script src="source/leaflet.ajax.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/Leaflet.awesome-markers/2.0.2/leaflet.awesome-markers.min.js"></script>
+
+    <!-- ADDED: MarkerCluster JS for Wildfire data -->
+    <script src="https://unpkg.com/leaflet.markercluster@1.4.1/dist/leaflet.markercluster.js"></script>
+
+    <!-- ADDED: External Wildfire GeoJSON Data Files -->
+    <script src="data/wildfiresZjarret_2024_3857_0.js"></script>
+    <script src="data/wildfiresZjarret_2023_3857_1.js"></script>
+    <script src="data/wildfiresZjarret_2022_3857_2.js"></script>
+  </body>
+  <script>
+    var map;
+    // KRGJSH Defining
+    var crsEpsg6870Def =
+      "+proj=tmerc +lat_0=0 +lon_0=20 +k=1 +x_0=500000 +y_0=0 +ellps=GRS80 +towgs84=0,0,0,0,0,0,0 +units=m +no_defs";
+    var crsEpsg6870 = new L.Proj.CRS("EPSG:6870", crsEpsg6870Def);
+
+    // initialize the map
+    map = L.map("map", {
+      center: [41.169121114314605, 20.050317406712136],
+      zoom: 7.5,
+      attributionControl: false,
+      zoomControl: false,
+    });
+
+    //Basemaps
+    var iconLayersControl = new L.Control.IconLayers(
+      [
+        {
+          title: "Satellite",
+          layer: L.tileLayer(
+            "https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}",
+            { maxZoom: 20 }
+          ),
+          icon: "img/satellite.png",
+        },
+        {
+          title: "CartoDB",
+          layer: L.tileLayer(
+            "https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png",
+            { maxZoom: 20 }
+          ),
+          icon: "img/cartodb.png",
+        },
+      ],
+      { position: "bottomleft", maxLayersInRow: 5 }
+    );
+    iconLayersControl.addTo(map);
+
+    // All controls from your new map
+    L.control
+      .coordProjection({
+        crs: crsEpsg6870,
+        prefix: "KRGJSH (EPSG:6870):",
+        position: "bottomright",
+        lngFirst: true,
+        lngFormatter: (lng) => lng.toFixed(2) + " Lindje (y)",
+        latFormatter: (lat) => lat.toFixed(2) + " Veri(x)",
+      })
+      .addTo(map);
+    var sidebar = L.control.sidebar("sidebar", { position: "left" });
+    map.addControl(sidebar);
+    var sideBarButton = L.easyButton("glyphicon-transfer", () =>
+      sidebar.hide()
+    ).addTo(map);
+    var scale = L.control
+      .scale({ position: "bottomright", maxWidth: 200, imperial: false })
+      .addTo(map);
+    L.control.zoom({ position: "topright" }).addTo(map);
+    var measure = L.control
+      .polylineMeasure({ position: "topright" })
+      .addTo(map);
+    map.pm.addControls({
+      position: "topleft",
+      drawCircleMarker: false,
+      rotateMode: false,
+    });
+
+    // --- LOGIC FOR data/points.geojson (from your new code) ---
+    function style_and_bind_points(feature, latlng) {
+      const subcategory = feature.properties.subcategory;
+      let iconOptions = {
+        markerColor: "gray",
+        prefix: "fa",
+        icon: "question-circle",
+      };
+      switch (subcategory) {
+        case "Bridge":
+          iconOptions = { markerColor: "blue", prefix: "fa", icon: "bridge" };
+          break;
+        case "Military":
+          iconOptions = {
+            markerColor: "red",
+            prefix: "fa",
+            icon: "shield-halved",
+          };
+          break;
+        case "Residential Building":
+          iconOptions = { markerColor: "green", prefix: "fa", icon: "house" };
+          break;
+        case "Government Building":
+          iconOptions = {
+            markerColor: "darkblue",
+            prefix: "fa",
+            icon: "building-columns",
+          };
+          break;
+        case "Educational Building":
+          iconOptions = { markerColor: "orange", prefix: "fa", icon: "school" };
+          break;
+        case "Office":
+        case "Retail":
+          iconOptions = { markerColor: "purple", prefix: "fa", icon: "store" };
+          break;
+        case "Historic":
+          iconOptions = {
+            markerColor: "cadetblue",
+            prefix: "fa",
+            icon: "landmark",
+          };
+          break;
+        case "Cultural":
+          iconOptions = {
+            markerColor: "pink",
+            prefix: "fa",
+            icon: "masks-theater",
+          };
+          break;
+        case "Airport":
+        case "Transport":
+          iconOptions = { markerColor: "black", prefix: "fa", icon: "plane" };
+          break;
+      }
+      const styledIcon = L.AwesomeMarkers.icon(iconOptions);
+      const marker = L.marker(latlng, { icon: styledIcon });
+      marker.bindTooltip(feature.properties.name);
+      const popupContent = `<h3>${feature.properties.name}</h3><b>Category:</b> ${feature.properties.primary_category}<br><b>Subcategory:</b> ${feature.properties.subcategory}<br><hr><i>${feature.properties.description}</i>`;
+      marker.bindPopup(popupContent);
+      return marker;
+    }
+    var poiMarkers = L.geoJSON.ajax("data/points.geojson", {
+      pointToLayer: style_and_bind_points,
+    });
+    var parcels = L.geoJSON.ajax("data/parcels.geojson");
+
+    // --- MERGED: LOGIC FOR WILDFIRE DATA ---
+
+    // 1. Comprehensive field mappings for all wildfire layers
+    const wildfireFieldMappings = [
+      { key: "OBJECTID", label: "Object ID" },
+      { key: "InspireId", label: "Inspire ID" },
+      { key: "InspireID", label: "Inspire ID" },
+      { key: "KategoriaE", label: "Kategoria" },
+      { key: "LlojiIRrez", label: "Lloji i Rrezikut" },
+      { key: "PeriudhaEV", label: "Periudha e Vlerësimit" },
+      { key: "VleratCil", label: "Përshkrimi i Dëmit" },
+      { key: "VleratSasi", label: "Vlera Sasiore" },
+      { key: "EVlefshmeN", label: "E Vlefshme Nga" },
+      { key: "EVlefshmeD", label: "E Vlefshme Deri" },
+      { key: "PeriudhaEK", label: "Periudha Kohore" },
+      { key: "FillimiICi", label: "Fillimi i Ciklit" },
+      { key: "Perfundim", label: "Përfundimi" },
+      { key: "Perfundimi", label: "Përfundimi" },
+      { key: "Probabilit", label: "Probabiliteti" },
+      { key: "Vleresimi", label: "Vlerësimi" },
+      { key: "MetodaEPe", label: "Metoda e Përcaktimit" },
+      { key: "Emri", label: "Emri i Ligjit" },
+      { key: "Emertimi", label: "Emërtimi" },
+      { key: "Emertimil", label: "Emërtimi" },
+      { key: "Data", label: "Data e Ligjit" },
+      { key: "ReferencaS", label: "Referenca" },
+      { key: "Link", label: "Burimi i të dhënave", type: "link" },
+    ];
+
+    // 2. Function to create detailed popup content for wildfires
+    function createWildfirePopup(properties) {
+      const title = properties.EmriIRasti || "Detaje të Ngjarjes";
+      let content = `<div class="popup-title">${title}</div>`;
+      wildfireFieldMappings.forEach((mapping) => {
+        const value = properties[mapping.key];
+        if (value && String(value).trim()) {
+          if (mapping.type === "link") {
+            content += `<div class="popup-row"><span class="popup-key">${mapping.label}:</span> <a href="${value}" target="_blank" rel="noopener noreferrer">Shiko në QBZ</a></div>`;
+          } else {
+            content += `<div class="popup-row"><span class="popup-key">${mapping.label}:</span> ${value}</div>`;
+          }
+        }
+      });
+      return content;
+    }
+
+    // 3. Function to bind popups and tooltips to each wildfire feature
+    function onEachWildfireFeature(feature, layer) {
+      if (feature.properties) {
+        layer.bindPopup(createWildfirePopup(feature.properties));
+        layer.bindTooltip(feature.properties.EmriIRasti);
+      }
+    }
+
+    // 4. Initialize Marker Cluster Group for point-based wildfires
+    const wildfireClusterGroup = L.markerClusterGroup();
+
+    // 5. Load the wildfire layers
+    const wildfireArea2024 = L.geoJSON(json_wildfiresZjarret_2024_3857_0, {
+      style: {
+        color: "#e74c3c",
+        weight: 3,
+        opacity: 0.9,
+        fillColor: "#e74c3c",
+        fillOpacity: 0.4,
+      },
+      onEachFeature: onEachWildfireFeature,
+    });
+
+    const wildfirePoints2023 = L.geoJSON(json_wildfiresZjarret_2023_3857_1, {
+      pointToLayer: (f, latlng) =>
+        L.marker(latlng, {
+          icon: L.AwesomeMarkers.icon({
+            icon: "fire",
+            prefix: "fa",
+            markerColor: "orange",
+          }),
+        }),
+      onEachFeature: onEachWildfireFeature,
+    });
+    wildfireClusterGroup.addLayer(wildfirePoints2023); // Add to cluster
+
+    const wildfirePoints2022 = L.geoJSON(json_wildfiresZjarret_2022_3857_2, {
+      pointToLayer: (f, latlng) =>
+        L.marker(latlng, {
+          icon: L.AwesomeMarkers.icon({
+            icon: "fire",
+            prefix: "fa",
+            markerColor: "darkred",
+          }),
+        }),
+      onEachFeature: onEachWildfireFeature,
+    });
+    wildfireClusterGroup.addLayer(wildfirePoints2022); // Add to cluster
+
+    // Add the overlay layers to the map explicitly
+    wildfireArea2024.addTo(map);
+    wildfireClusterGroup.addTo(map);
+
+    // --- LAYER CONTROL ---
+    // Combine all layers into a single control
+    var overlays = {
+      "Zjarret Viti 2024": wildfireArea2024,
+      "Zjarret Viti 2022 dhe 2023": wildfireClusterGroup,
+    };
+    L.control
+      .layers(null, overlays, { position: "topright", collapsed: true })
+      .addTo(map);
+  </script>
+</html>

@@ -1,0 +1,83 @@
+/*
+ * L.Draw.OrthoPolygon.css
+ * CSS for the Orthogonal Polygon drawing tool and its toolbar control.
+ */
+
+:root {
+  --ortho-icon-color: #555;
+  --ortho-active-bg: #f0f0f0;
+  --ortho-active-border: #a0a0a0;
+  --ortho-tooltip-bg: white;
+  --ortho-tooltip-border: #bbb;
+  --ortho-tooltip-shadow: rgba(0, 0, 0, 0.15);
+  --ortho-input-border: #ccc;
+  --ortho-button-bg: linear-gradient(to bottom, #007bff, #0069d9);
+  --ortho-button-hover-bg: linear-gradient(to bottom, #0069d9, #005cbf);
+  --ortho-button-disabled-bg: #b0b0b0;
+  --ortho-label-bg: linear-gradient(to bottom, rgba(255,255,255,0.95), rgba(255,255,255,0.8));
+  --ortho-label-border: #999;
+  --ortho-label-shadow: rgba(0,0,0,0.1);
+  --ortho-label-text-shadow: white;
+}
+
+/* Toolbar Button Style */
+.leaflet-control-ortho-draw a,
+.leaflet-draw-ortho {
+    /* The SVG icon is URL-encoded to work in all browsers */
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cpath d='M8 6L16 6 M8 18L16 18 M6 8L6 16 M18 8L18 16' stroke='%23555' stroke-width='2' stroke-linecap='round' /%3E%3Ccircle cx='6' cy='6' r='2' fill='%23555' /%3E%3Ccircle cx='18' cy='6' r='2' fill='%23555' /%3E%3Ccircle cx='6' cy='18' r='2' fill='%23555' /%3E%3Ccircle cx='18' cy='18' r='2' fill='%2523555' /%3E%3C/svg%3E");
+    background-repeat: no-repeat;
+    background-position: center;
+    background-size: 18px 18px; /* Control icon size */
+    border-radius: 4px;
+}
+
+/* Style for when the drawing button is active */
+.leaflet-draw-ortho-active {
+    background-color: var(--ortho-active-bg);
+    border: 1px solid var(--ortho-active-border);
+}
+
+/* Tooltip for entering distance */
+.leaflet-draw-tooltip {
+    position: absolute;
+    background: var(--ortho-tooltip-bg);
+    padding: 12px;
+    border: 1px solid var(--ortho-tooltip-border);
+    border-radius: 8px;
+    font-family: Arial, sans-serif;
+    font-size: 14px;
+    z-index: 1010;
+    box-shadow: 0 4px 12px var(--ortho-tooltip-shadow);
+    transition: opacity 0.2s;
+}
+
+.ortho-tooltip-content {
+    display: flex; flex-direction: column; gap: 8px; align-items: flex-start;
+}
+.ortho-tooltip-content input[type="number"] {
+    padding: 6px; border: 1px solid var(--ortho-input-border); border-radius: 4px; width: 150px;
+}
+.ortho-tooltip-content button {
+    padding: 8px 12px; width: 100%; border: 1px solid #0069d9; border-radius: 4px; background: var(--ortho-button-bg); color: white; cursor: pointer; font-weight: bold; transition: background-color 0.2s;
+    text-shadow: 0 -1px 0 rgba(0,0,0,0.2);
+}
+.ortho-tooltip-content button:hover:not(:disabled) { background: var(--ortho-button-hover-bg); }
+.ortho-tooltip-content button:disabled { background: var(--ortho-button-disabled-bg); cursor: not-allowed; border-color: #999; }
+
+/* Dashed animation for preview lines */
+.preview-line {
+    stroke-dasharray: 5, 5;
+    animation: ortho-dash-animation 1s linear infinite;
+}
+@keyframes ortho-dash-animation { to { stroke-dashoffset: -10; } }
+
+/* Style for the icon at the center of the polygon */
+.polygon-center-icon {
+    font-size: 24px; text-shadow: 0 0 4px white, 0 0 4px white;
+}
+
+/* Style for the distance labels on segments */
+.ortho-distance-label div {
+    background: var(--ortho-label-bg); padding: 2px 5px; border-radius: 4px; font-size: 11px; font-weight: bold; border: 1px solid var(--ortho-label-border); white-space: nowrap; box-shadow: 0 1px 3px var(--ortho-label-shadow);
+    text-shadow: 0 1px 0 var(--ortho-label-text-shadow);
+}

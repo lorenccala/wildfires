@@ -1,0 +1,14 @@
+/**
+ * CSS for L.Control.CoordProjection
+ */
+.leaflet-control-coord-projection {
+    background: rgba(255, 255, 255, 0.8);
+    padding: 5px 8px;
+    border-radius: 4px;
+    border: 1px solid #999;
+    box-shadow: 0 1px 5px rgba(0, 0, 0, 0.4);
+    color: #333;
+    font-family: 'Helvetica Neue', Arial, Helvetica, sans-serif;
+    font-size: 12px;
+    white-space: nowrap; /* Prevent wrapping on smaller screens */
+}
